@@ -1,0 +1,154 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title>Contacts DB Web Client</title>
+        
+        <link rel="stylesheet" href="style/site.css" type="text/css">
+        <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/knockout/3.1.0/knockout-min.js" type="application/javascript"></script>
+    </head>
+    <body>
+    	<div id="header">
+        	
+        </div>
+        <div id="content">
+        	<h1>Contacts Management</h1>
+	        <div id="dashboard-wrapper" data-bind="visible: dashboardVisible">
+		        <div id="filter-wrapper" class="search-form" data-bind="with: searchFields">
+			        <p>First Name: <input data-bind='value: first_name, valueUpdate: "afterkeydown"'/></p>
+					<p>Last Name: <input data-bind='value: last_name, valueUpdate: "afterkeydown"'/></p>
+					<p>City: <input data-bind='value: city, valueUpdate: "afterkeydown"'/></p>
+					<p>Zip Code: <input data-bind='value: zip_code, valueUpdate: "afterkeydown"'/></p>
+					<p>State: <input data-bind='value: st_province, valueUpdate: "afterkeydown"'/></p>
+		        </div>
+		        
+		        <span>
+		        	<div>
+			        	<button data-bind="click: getContacts">Filter</button>
+			        	<button data-bind="click: clearFilters">Clear</button>
+			        	<button data-bind="click: exportExcel, disable: contactsArray().length < 1">Export</button>
+			        	<span class="results-count">( <!-- ko text: $root.contactsArray().length --><!--/ko--> )</span>
+			        	<button class="right-floated" data-bind="click: newContact">Add</button>
+		        	</div>
+		        </span>
+		        
+		        <div id="contacts-results-wrapper" class="results-wrapper">
+			        <div id="contacts-table-wrapper" data-bind="visible: contactsArray().length > 0" class="results-grid">
+				        <table>
+				        	<thead>
+				        		<!-- Nicely formatted for Website -->
+				        		<!-- <tr data-bind="ifnot: isTableVisible">
+				        			<th>Contacts</th>
+			        			</tr> -->
+			        			<!-- Nicely formatted for Excel Export -->
+			        			<tr data-bind="if: isTableVisible">
+			        				<th>First Name</th>
+				        			<th>Last Name</th>
+				        			<th>Street</th>
+				        			<th>City</th>
+				        			<th>State</th>
+				        			<th>Zip</th>
+			        			</tr>
+			    			</thead>
+				        	<tbody data-bind="foreach: contactsArray">
+				        		<!-- Nicely formatted for Website -->
+				        		<tr data-bind="click: $root.goToContact, ifnot: $root.isTableVisible">
+				        			<td>
+				        				<div class="data_section">
+					        				<p class="short" >
+						        				<span data-bind="text: first_name"></span>
+							        			<span data-bind="text: last_name"></span>
+						        			</p>
+						        			<p class="short" data-bind="text: address1, visible:(address1)"></p>
+						        			<p class="short" data-bind="text: address2, visible:(address2)"></p>
+						        			<p class="short" >
+							        			<span data-bind="text: city, visible:(city)"></span>,
+							        			<span data-bind="text: st_province, visible:(st_province)"></span>
+							        			<span data-bind="text: zip_code, visible:(zip_code)"></span>
+						        			</p>
+					        			</div>
+					        			<div class="data_section">
+					        				<!-- Phone / email data here -->
+					        				<!-- <p class="short">Phone: 555-555-555</p>
+					        				<p class="short">Email: somebody@mail.com</p> -->
+					        			</div>
+				        			</td>
+				        		</tr>
+				        		<!-- Nicely formatted for Excel Export -->
+				        		<tr data-bind="if: $root.isTableVisible">
+				        			<td data-bind="text: first_name"></td>
+				        			<td data-bind="text: last_name"></td>
+				        			<td data-bind="text: (address2) ? address1 + ' ' + address2 : address1"></td>
+				        			<td data-bind="text: city"></td>
+				        			<td data-bind="text: st_province"></td>
+				        			<td data-bind="text: zip_code"></td>
+				        		</tr>
+				        	</tbody>
+				        </table>
+			        </div>
+			        <div class="results-grid-no-data" data-bind="visible: contactsArray().length < 1">
+			        	<p>No Contacts Returned</p>
+		        	</div>
+		        </div>
+	        </div>
+	        <div id="edit-contact-wrapper" data-bind="visible: editContactVisible">
+	        	<div id="new-contact-form-wrapper" class="edit-form" data-bind="with: newContactData">
+	        		<p data-bind="text: 'ID: ' + id(), visible: (id())"></p>
+	        		<p data-bind="ifnot: id">ID: None</p>
+	        		<p>First Name: <input data-bind='value: first_name, valueUpdate: "afterkeydown"'/></p>
+	        		<p>Middle Name: <input data-bind='value: middle_name, valueUpdate: "afterkeydown"'/></p>
+	        		<p>Last Name: <input data-bind='value: last_name, valueUpdate: "afterkeydown"'/></p>
+	        		<p class="short">Address:</p>
+	        		<div>
+		        		<input data-bind='value: address1, valueUpdate: "afterkeydown"'/><br/>
+		        		<input data-bind='value: address2, valueUpdate: "afterkeydown"'/><br/>
+	        		</div>
+	        		<p>City: <input data-bind='value: city, valueUpdate: "afterkeydown"'/></p>
+	        		<p>State/Province: <input data-bind='value: st_province, valueUpdate: "afterkeydown"'/></p>
+	        		<p>Zip Code: <input data-bind='value: zip_code, valueUpdate: "afterkeydown"'/></p>
+	        		<p>Country: <input data-bind='value: country, valueUpdate: "afterkeydown"'/></p>
+	        		
+	        		<span>
+	        			<button data-bind='click: $root.saveContact'>Save</button>
+	        			<button data-bind='click: $root.cancelEdit'>Cancel</button>
+	        			<button class="right-floated" data-bind='click: $root.deleteContact'>Delete</button>
+	        		</span>
+	        	</div>
+	        </div>
+        </div>
+        <div id="footer">
+        	
+        </div>
+        <script src="ViewModels/contactsViewModel.js" type="text/javascript"></script>
+        <script type="text/javascript">
+        	$(document).ready(function(){
+        			resizePageElements();
+				});
+
+			$(document).ajaxError(function(data) {
+			  console.log();
+			  alert("An error ocurred on the previous action.");
+			});
+
+			window.onresize = function(event) {
+				resizePageElements();
+			}
+			
+			function resizeContentDiv() {
+				ch = $(window).height() - $('#header').height() - $('#footer').height() - 30;
+				$('#content').css({'height': ch});
+			}
+
+			function resizeTableDiv() {
+				vph = $('#content').height() - $('#filter-wrapper').height() - 140;
+				$('#contacts-results-wrapper').css({'height': vph});
+			}
+			
+			function resizePageElements(){
+				resizeContentDiv();
+				resizeTableDiv();
+			}
+		</script>
+    </body>
+</html>
